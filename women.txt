@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Платформа "Менторинг для женщин-предпринимателей"</title>
+    <!-- Подключение Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Иконочный шрифт (для иконок в интерфейсе) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Конфигурация Tailwind и шрифты -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Цвета, основанные на брендинге ЕБРР (обычно синий и золотой/желтый)
+                        'ebrd-blue': {
+                            'dark': '#003a5d', // Темно-синий
+                            'medium': '#005a8b',
+                            'light': '#007baf',
+                        },
+                        'ebrd-gold': {
+                            'DEFAULT': '#f3a800',
+                            'light': '#ffc107',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Стиль для основного шрифта -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Светло-серый фон */
+        }
+        /* Стили для кастомного скроллбара в чате */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        
+        /* Стили для лоадера */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #005a8b;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- 1. Боковая навигационная панель -->
+    <aside class="w-64 bg-ebrd-blue-dark text-white flex-shrink-0 flex flex-col shadow-lg">
+        <div class="h-20 flex items-center justify-center border-b border-ebrd-blue-medium">
+            <i class="fas fa-hand-holding-heart text-3xl text-ebrd-gold-light mr-3"></i>
+            <span class="text-xl font-bold whitespace-nowrap">EBRD Women</span>
+        </div>
+        <nav class="flex-1 overflow-y-auto" id="main-nav">
+            <ul class="py-6 space-y-2">
+                <!-- Ссылки для навигации -->
+                <li>
+                    <a href="#dashboard" class="nav-link bg-ebrd-blue-medium text-white border-l-4 border-ebrd-gold-light">
+                        <i class="fas fa-home w-6 text-center"></i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#mentor" class="nav-link">
+                        <i class="fas fa-user-tie w-6 text-center"></i>
+                        <span>Мой Ментор</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#group" class="nav-link">
+                        <i class="fas fa-users w-6 text-center"></i>
+                        <span>Моя Группа</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#school" class="nav-link">
+                        <i class="fas fa-graduation-cap w-6 text-center"></i>
+                        <span>Бизнес-школа</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#community" class="nav-link">
+                        <i class="fas fa-comments w-6 text-center"></i>
+                        <span>Сообщество</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#analytics" class="nav-link">
+                        <i class="fas fa-chart-line w-6 text-center"></i>
+                        <span>Мой Прогресс</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#contest" class="nav-link">
+                        <i class="fas fa-trophy w-6 text-center"></i>
+                        <span>Конкурсы</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-ebrd-blue-medium">
+            <a href="#profile" class="flex items-center p-3 rounded-lg hover:bg-ebrd-blue-medium transition-colors">
+                <img src="https://placehold.co/40x40/f3a800/003a5d?text=АМ" alt="Профиль" class="w-10 h-10 rounded-full border-2 border-ebrd-gold-light">
+                <div class="ml-3">
+                    <p class="font-semibold">Айжан Муратова</p>
+                    <p class="text-sm text-gray-300">г. Алматы</p>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. Основной контент -->
+    <main class="flex-1 bg-gray-100 overflow-y-auto">
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 border-b border-gray-200">
+            <h1 id="page-title" class="text-2xl font-semibold text-ebrd-blue-dark">Главная</h1>
+            <div class="flex items-center space-x-4">
+                <button class="text-gray-500 hover:text-ebrd-blue-dark">
+                    <i class="fas fa-bell text-xl"></i>
+                </button>
+                <button class="bg-ebrd-gold hover:bg-ebrd-gold-light text-ebrd-blue-dark font-bold py-2 px-4 rounded-full shadow transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    <span>Новая задача</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Контентные секции (переключаются через JS) -->
+        <div class="p-8">
+            <!-- Секция: Главная (Dashboard) -->
+            <section id="dashboard" class="page-content space-y-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Добро пожаловать, Айжан!</h2>
+                
+                <!-- Блок с ключевыми метриками (Этап 8) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <i class="fas fa-tasks text-3xl text-ebrd-blue-light mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Задачи на неделю</p>
+                            <p class="text-2xl font-bold text-gray-800">3</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <i class="fas fa-calendar-check text-3xl text-green-500 mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Следующая сессия с ментором</p>
+                            <p class="text-lg font-bold text-gray-800">28 Октября, 11:00</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <i class="fas fa-book-open text-3xl text-ebrd-gold mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Активные курсы</p>
+                            <p class="text-2xl font-bold text-gray-800">2</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок AI Помощника (Концепция стр. 17) -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <h3 class="text-lg font-semibold text-white bg-ebrd-blue-medium p-4 flex items-center">
+                        <i class="fas fa-robot mr-3 text-ebrd-gold-light"></i>
+                        Ваш AI Бизнес-Консультант
+                    </h3>
+                    <div class="p-6">
+                        <!-- Окно чата -->
+                        <div id="chat-window" class="chat-messages h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 space-y-4">
+                            <!-- Сообщение от AI -->
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-ebrd-blue-dark text-white flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="bg-gray-100 p-3 rounded-lg max-w-lg">
+                                    <p class="text-sm">Здравствуйте! Я ваш AI-консультант, основанный на Gemini. Я здесь, чтобы помочь вам с вопросами по маркетингу, финансам или стратегии. Что бы вы хотели обсудить сегодня?</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Окно ввода -->
+                        <div class="flex space-x-3">
+                            <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ebrd-blue-light" placeholder="Например: 'Какие 3 SMM-тренда актуальны для Казахстана?'">
+                            <button id="send-btn" class="bg-ebrd-blue-dark text-white font-semibold px-5 py-2 rounded-lg hover:bg-ebrd-blue-medium transition-colors shadow">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div id="loader" class="loader mt-4 hidden"></div>
+                        <!-- Блок для отображения источников (grounding) -->
+                        <div id="sources-container" class="mt-4 text-sm text-gray-600 hidden">
+                            <h4 class="font-semibold">Источники:</h4>
+                            <ul id="sources-list" class="list-disc list-inside"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Мой Ментор (Этап 4) -->
+            <section id="mentor" class="page-content hidden space-y-6">
+                <div class="bg-white p-8 rounded-lg shadow-md flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                    <img src="https://placehold.co/150x150/003a5d/ffffff?text=Ментор" alt="Фото ментора" class="w-36 h-36 rounded-full shadow-lg border-4 border-ebrd-gold-light">
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 class="text-3xl font-bold text-ebrd-blue-dark">Елена Попова</h2>
+                        <p class="text-lg text-ebrd-gold font-semibold">Эксперт по Digital-маркетингу и E-commerce</p>
+                        <p class="text-gray-600 mt-2 max-w-2xl">15+ лет опыта в запуске и масштабировании онлайн-бизнеса. Специализация: ритейл, IT-продукты. Помогла 30+ стартапам выйти на международный рынок.</p>
+                        <div class="mt-4 flex justify-center md:justify-start space-x-3">
+                            <button class="bg-ebrd-blue-dark text-white px-4 py-2 rounded-lg hover:bg-ebrd-blue-medium transition-colors"><i class="fas fa-calendar-plus mr-2"></i>Записатьcя на сессию</button>
+                            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"><i class="fas fa-paper-plane mr-2"></i>Написать</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Дорожная карта (Этап 4) -->
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Наша Дорожная Карта</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center mr-4"><i class="fas fa-check"></i></div>
+                            <div>
+                                <p class="font-semibold">Анализ текущей воронки продаж</p>
+                                <p class="text-sm text-gray-500">Статус: Выполнено (15 Окт.)</p>
+                            </div>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-ebrd-gold text-ebrd-blue-dark flex items-center justify-center mr-4"><i class="fas fa-cogs"></i></div>
+                            <div>
+                                <p class="font-semibold">Разработка SMM-стратегии (Q4)</p>
+                                <p class="text-sm text-gray-500">Статус: В процессе</p>
+                            </div>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-4"><i class="fas fa-flag-checkered"></i></div>
+                            <div>
+                                <p class="font-semibold">Настройка таргетированной рекламы</p>
+                                <p class="text-sm text-gray-500">Статус: Ожидание</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Секция: Моя Группа (Этап 5) -->
+            <section id="group" class="page-content hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Групповой менторинг: "IT & Digital"</h2>
+                <p class="text-gray-600">Ваша группа для мастермайндов и обмена опытом. Ментор: Алия Сабитова.</p>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Ближайший мастермайнд</h3>
+                    <p class="text-xl text-ebrd-blue-dark font-bold">Тема: "Масштабирование IT-услуг на экспорт"</p>
+                    <p class="text-gray-600">Дата: 2 Ноября, 18:00 (Онлайн)</p>
+                    <button class="mt-4 bg-ebrd-gold text-ebrd-blue-dark font-semibold px-4 py-2 rounded-lg hover:bg-ebrd-gold-light transition-colors">Подключиться</button>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Участницы группы (6)</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="text-center p-2 rounded-lg">
+                            <img src="https://placehold.co/60x60/f3a800/003a5d?text=АМ" alt="Участница" class="w-16 h-16 rounded-full mx-auto shadow-sm border-2 border-ebrd-gold">
+                            <p class="text-sm font-medium mt-2">Айжан М. (Вы)</p>
+                        </div>
+                        <div class="text-center p-2 rounded-lg">
+                            <img src="https://placehold.co/60x60/005a8b/ffffff?text=ГС" alt="Участница" class="w-16 h-16 rounded-full mx-auto shadow-sm border-2 border-gray-200">
+                            <p class="text-sm font-medium mt-2">Гульнара С.</p>
+                        </div>
+                        <div class="text-center p-2 rounded-lg">
+                            <img src="https://placehold.co/60x60/005a8b/ffffff?text=ДБ" alt="Участница" class="w-16 h-16 rounded-full mx-auto shadow-sm border-2 border-gray-200">
+                            <p class="text-sm font-medium mt-2">Динара Б.</p>
+                        </div>
+                        <!-- ... другие участницы -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Бизнес-школа (Этап 6) -->
+            <section id="school" class="page-content hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Библиотека Знаний (LMS)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Карточка курса -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                        <img src="https://placehold.co/600x400/003a5d/ffffff?text=Финансы" class="w-full h-48 object-cover" alt="Обложка курса">
+                        <div class="p-6">
+                            <p class="text-sm text-ebrd-blue-light font-semibold">Модуль 1</p>
+                            <h3 class="text-lg font-bold text-gray-800 mt-1">Финансы для не-финансистов</h3>
+                            <p class="text-gray-600 text-sm mt-2">Научитесь читать P&L, Cashflow и управлять бюджетом.</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Пройдено 75%</p>
+                        </div>
+                    </div>
+                    <!-- Карточка курса -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                        <img src="https://placehold.co/600x400/007baf/ffffff?text=Маркетинг" class="w-full h-48 object-cover" alt="Обложка курса">
+                        <div class="p-6">
+                            <p class="text-sm text-ebrd-blue-light font-semibold">Модуль 2</p>
+                            <h3 class="text-lg font-bold text-gray-800 mt-1">Digital-маркетинг: Стратегия</h3>
+                            <p class="text-gray-600 text-sm mt-2">От анализа ЦА до построения воронки продаж в Instagram.</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                                <div class="bg-ebrd-gold h-2.5 rounded-full" style="width: 20%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Пройдено 20%</p>
+                        </div>
+                    </div>
+                    <!-- Карточка курса -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                        <img src="https://placehold.co/600x400/f3a800/003a5d?text=Инновации" class="w-full h-48 object-cover" alt="Обложка курса">
+                        <div class="p-6">
+                            <p class="text-sm text-ebrd-blue-light font-semibold">Модуль 3</p>
+                            <h3 class="text-lg font-bold text-gray-800 mt-1">Инновации и Устойчивость (ESG)</h3>
+                            <p class="text-gray-600 text-sm mt-2">Внедрение "зеленых" технологий и соц. ответственности.</p>
+                            <button class="mt-4 w-full bg-ebrd-blue-dark text-white font-semibold py-2 rounded-lg hover:bg-ebrd-blue-medium transition-colors">Начать</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Секция: Сообщество (Этап 2) -->
+            <section id="community" class="page-content hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Сообщество и Нетворкинг</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold mb-4">Отраслевые чаты (Telegram)</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-ebrd-blue-dark hover:underline font-medium"><i class="fab fa-telegram-plane mr-2"></i> Чат "IT & Digital" (Ваша группа)</a></li>
+                            <li><a href="#" class="text-ebrd-blue-dark hover:underline font-medium"><i class="fab fa-telegram-plane mr-2"></i> Чат "Производство"</a></li>
+                            <li><a href="#" class="text-ebrd-blue-dark hover:underline font-medium"><i class="fab fa-telegram-plane mr-2"></i> Чат "Услуги (HoReCa, Beauty)"</a></li>
+                            <li><a href="#" class="text-ebrd-blue-dark hover:underline font-medium"><i class="fab fa-telegram-plane mr-2"></i> Общий канал (Анонсы)</a></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold mb-4">Ближайшие события</h3>
+                        <div class="border-l-4 border-ebrd-gold pl-4 mb-4">
+                            <p class="font-bold">Вебинар: "Выход на Ozon и Wildberries"</p>
+                            <p class="text-sm text-gray-600">30 Октября, 19:00</p>
+                        </div>
+                        <div class="border-l-4 border-gray-300 pl-4">
+                            <p class="font-bold">Офлайн-встреча в Астане</p>
+                            <p class="text-sm text-gray-600">5 Ноября, 10:00 (Astana Hub)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Секция: Мой Прогресс (Этап 8) -->
+            <section id="analytics" class="page-content hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Мониторинг Бизнес-метрик</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Динамика (Последние 6 мес.)</h3>
+                    <!-- Здесь должна быть настоящая диаграмма (например, с Chart.js), 
+                         но для прототипа используем заглушку -->
+                    <p class="text-gray-600 mb-2">Рост выручки (KZT)</p>
+                    <div class="w-full bg-gray-100 rounded-lg p-4">
+                        <img src="https://placehold.co/1000x300/f0f0f0/808080?text=График+роста+выручки" alt="График роста выручки" class="w-full rounded">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div>
+                            <p class="text-gray-600 mb-2">Рост кол-ва сотрудников</p>
+                            <div class="w-full bg-gray-100 rounded-lg p-4">
+                                <img src="https://placehold.co/400x200/f0f0f0/808080?text=График+роста+штата" alt="График роста штата" class="w-full rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 mb-2">Удовлетворенность программой</p>
+                            <div class="w-full bg-gray-100 rounded-lg p-4">
+                                <img src="https://placehold.co/400x200/f0f0f0/808080?text=Оценка+удовлетворенности" alt="Оценка" class="w-full rounded">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Конкурсы (Этап 7) -->
+            <section id="contest" class="page-content hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Конкурсы Программы</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Карточка конкурса -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <i class="fas fa-rocket text-4xl text-ebrd-gold mb-3"></i>
+                        <h3 class="text-xl font-bold text-ebrd-blue-dark">"Бизнес-прорыв"</h3>
+                        <p class="text-gray-600 mt-2 mb-4">Расскажите о своих достижениях за время программы и получите главный приз.</p>
+                        <p class="text-sm text-gray-500">Прием заявок: до 15 Декабря</p>
+                        <button class="mt-4 bg-ebrd-blue-dark text-white font-semibold px-4 py-2 rounded-lg hover:bg-ebrd-blue-medium transition-colors">Подать заявку</button>
+                    </div>
+                    <!-- Карточка конкурса -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <i class="fas fa-award text-4xl text-ebrd-gold mb-3"></i>
+                        <h3 class="text-xl font-bold text-ebrd-blue-dark">"Лучший ментор года"</h3>
+                        <p class="text-gray-600 mt-2 mb-4">Номинируйте своего ментора и поделитесь вашей историей успеха.</p>
+                        <p class="text-sm text-gray-500">Голосование: с 1 по 15 Декабря</p>
+                        <button class="mt-4 bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">Номинировать</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Секция: Профиль (для примера) -->
+            <section id="profile" class="page-content hidden">
+                <h2 class="text-2xl font-semibold text-gray-800">Мой профиль</h2>
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <p>Здесь будут настройки профиля, анкета и управление аккаунтом.</p>
+                 </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Скрипт для навигации и AI-чата -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page-content');
+            const pageTitle = document.getElementById('page-title');
+
+            // --- 1. Логика навигации ---
+            function showPage(hash) {
+                // Убираем #
+                const pageId = hash.substring(1); 
+                
+                // Скрываем все страницы
+                pages.forEach(page => {
+                    page.classList.add('hidden');
+                });
+                
+                // Показываем нужную страницу
+                const activePage = document.getElementById(pageId) || document.getElementById('dashboard');
+                activePage.classList.remove('hidden');
+
+                // Обновляем активную ссылку
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('bg-ebrd-blue-medium', 'text-white', 'border-l-4', 'border-ebrd-gold-light');
+                        pageTitle.textContent = link.querySelector('span').textContent;
+                    } else {
+                        link.classList.remove('bg-ebrd-blue-medium', 'text-white', 'border-l-4', 'border-ebrd-gold-light');
+                    }
+                });
+            }
+
+            // Обработка кликов по навигации
+            document.getElementById('main-nav').addEventListener('click', (e) => {
+                let target = e.target.closest('a');
+                if (target && target.classList.contains('nav-link')) {
+                    e.preventDefault();
+                    const hash = target.getAttribute('href');
+                    window.location.hash = hash;
+                }
+            });
+            
+            // Обработка клика по профилю (бонус)
+             document.querySelector('a[href="#profile"]').addEventListener('click', (e) => {
+                 e.preventDefault();
+                 window.location.hash = '#profile';
+             });
+
+            // Показать страницу при загрузке (на основе хеша или по умолчанию)
+            showPage(window.location.hash || '#dashboard');
+            
+            // Слушатель изменения хеша (для кнопок "Назад/Вперед" в браузере)
+            window.addEventListener('hashchange', () => {
+                showPage(window.location.hash || '#dashboard');
+            });
+
+
+            // --- 2. Логика AI-чата (Gemini API) ---
+            const sendBtn = document.getElementById('send-btn');
+            const chatInput = document.getElementById('chat-input');
+            const chatWindow = document.getElementById('chat-window');
+            const loader = document.getElementById('loader');
+            const sourcesContainer = document.getElementById('sources-container');
+            const sourcesList = document.getElementById('sources-list');
+
+            sendBtn.addEventListener('click', handleChatSubmit);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleChatSubmit();
+                }
+            });
+
+            function handleChatSubmit() {
+                const userQuery = chatInput.value.trim();
+                if (userQuery === "") return;
+
+                // Добавляем сообщение пользователя в чат
+                addMessageToChat(userQuery, 'user');
+                chatInput.value = "";
+                loader.classList.remove('hidden');
+                sourcesContainer.classList.add('hidden');
+                sourcesList.innerHTML = '';
+
+                // Вызываем API
+                callGeminiAPI(userQuery);
+            }
+
+            function addMessageToChat(message, sender) {
+                const messageEl = document.createElement('div');
+                if (sender === 'user') {
+                    messageEl.className = 'flex justify-end';
+                    messageEl.innerHTML = `
+                        <div class="bg-ebrd-blue-dark text-white p-3 rounded-lg max-w-lg">
+                            <p class="text-sm">${message}</p>
+                        </div>
+                    `;
+                } else {
+                    messageEl.className = 'flex items-start space-x-3';
+                    messageEl.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-ebrd-blue-dark text-white flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="bg-gray-100 p-3 rounded-lg max-w-lg">
+                            <!-- Текст будет вставлен после обработки markdown -->
+                        </div>
+                    `;
+                    // Простой Markdown парсер (для **bold**)
+                    let htmlMessage = message
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/\n/g, '<br>');
+                    
+                    messageEl.querySelector('.bg-gray-100').innerHTML = `<p class="text-sm">${htmlMessage}</p>`;
+                }
+                chatWindow.appendChild(messageEl);
+                // Прокрутка вниз
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            // Функция для вызова Gemini API
+            async function callGeminiAPI(userQuery) {
+                // Системная инструкция, основанная на целях программы (из PDF)
+                const systemPrompt = `Ты - "AI Бизнес-Консультант" для программы ЕБРР "Менторинг для женщин-предпринимателей Казахстана". 
+Твоя цель - помогать участницам повышать компетенции в управлении бизнесом, маркетинге, финансах и инновациях. 
+Отвечай профессионально, дружелюбно и по существу. 
+Всегда предоставляй конкретные, действенные советы. 
+Ты должен использовать поиск Google (grounding) для предоставления самой актуальной информации, особенно по трендам, инструментам или рыночным данным.`;
+
+                const apiKey = ""; // API-ключ не требуется, будет предоставлен средой выполнения
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: userQuery }]
+                    }],
+                    // Включаем Google Search (grounding) для получения актуальной информации
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                try {
+                    // Используем экспоненциальную задержку
+                    let response;
+                    let retries = 3;
+                    let delay = 1000;
+
+                    for (let i = 0; i < retries; i++) {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            break; // Успех, выходим из цикла
+                        }
+
+                        if (!response.ok && response.status === 429) {
+                            // Слишком много запросов, ждем и пробуем снова
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; // Увеличиваем задержку
+                        } else {
+                            // Другая ошибка
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                    }
+                    
+                    if (!response.ok) {
+                         throw new Error(`Failed to get response after ${retries} retries.`);
+                    }
+
+                    const result = await response.json();
+                    
+                    loader.classList.add('hidden');
+
+                    const candidate = result.candidates?.[0];
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const text = candidate.content.parts[0].text;
+                        addMessageToChat(text, 'ai');
+
+                        // Обработка источников (grounding metadata)
+                        const groundingMetadata = candidate.groundingMetadata;
+                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                            const sources = groundingMetadata.groundingAttributions
+                                .map(attribution => ({
+                                    uri: attribution.web?.uri,
+                                    title: attribution.web?.title,
+                                }))
+                                .filter(source => source.uri && source.title); // Убедимся, что источники валидны
+
+                            if (sources.length > 0) {
+                                sources.forEach(source => {
+                                    const li = document.createElement('li');
+                                    li.innerHTML = `<a href="${source.uri}" target="_blank" class="text-ebrd-blue-dark hover:underline">${source.title}</a>`;
+                                    sourcesList.appendChild(li);
+                                });
+                                sourcesContainer.classList.remove('hidden');
+                            }
+                        }
+                    } else {
+                        addMessageToChat("Извините, я не смог обработать ваш запрос. Попробуйте переформулировать.", 'ai');
+                    }
+                } catch (error) {
+                    console.error("Ошибка при вызове Gemini API:", error);
+                    loader.classList.add('hidden');
+                    addMessageToChat("Произошла ошибка при подключении к AI-консультанту. Пожалуйста, попробуйте позже.", 'ai');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
